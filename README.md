@@ -300,4 +300,4 @@ Ideas that would be natural next steps. None of these exist yet.
 
 ## License
 
-No license has been chosen. Add one before sharing the code.
+Released under the [MIT License](LICENSE).
