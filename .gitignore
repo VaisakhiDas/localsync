@@ -1,0 +1,54 @@
+# --- dependencies -------------------------------------------------------------
+node_modules/
+.pnp.*
+.yarn/
+
+# --- build output and caches --------------------------------------------------
+dist/
+build/
+coverage/
+.vite/
+.cache/
+.eslintcache
+*.tsbuildinfo
+frontend/dev-dist/
+
+# --- secrets and local configuration (NEVER commit these) ----------------------
+# Only .env.example (placeholders) is tracked.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+credentials.json
+service-account*.json
+
+# --- local databases (development PostgreSQL data) ----------------------------------
+.pgdata/
+backend/.pgdata/
+*.sqlite
+*.sqlite3
+
+# --- test output ---------------------------------------------------------------
+playwright-report/
+test-results/
+blob-report/
+
+# --- logs ------------------------------------------------------------------------
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- editors, OS and tool-specific local files ---------------------------------------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+.claude/

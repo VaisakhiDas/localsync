@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 780" width="1000" height="780" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
+  <title id="t">LocalSync architecture</title>
+  <desc id="d">The browser holds the editor, the Yjs document, IndexedDB and a sync provider. It talks to a Node.js server over WebSocket (document sync) and HTTPS (accounts and metadata). The server stores users, documents and the merged Yjs state in PostgreSQL.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#52525b"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="780" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="22" font-weight="700" fill="#18181b">LocalSync architecture</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#52525b">Each client edits locally first. The server is a synchronisation and persistence component, not the only home of the data.</text>
+
+  <!-- ===================== BROWSER ===================== -->
+  <rect x="20" y="76" width="430" height="680" rx="14" fill="#f4f4f5" stroke="#d4d4d8"/>
+  <text x="40" y="102" font-size="14" font-weight="700" fill="#3f3f46">BROWSER  (every user, every device)</text>
+
+  <rect x="40" y="116" width="390" height="92" rx="10" fill="#dbeafe" stroke="#60a5fa"/>
+  <text x="56" y="140" font-size="15" font-weight="700" fill="#1e3a8a">1 · React UI + TipTap / ProseMirror</text>
+  <text x="56" y="162" font-size="12.5" fill="#1e3a8a">The editor UI: renders text, toolbar, remote carets, panels.</text>
+  <text x="56" y="180" font-size="12.5" fill="#1e3a8a">Never the source of truth: it displays and edits the Y.Doc.</text>
+  <text x="56" y="198" font-size="12.5" fill="#1e3a8a">Read-only for viewers (the server enforces it too).</text>
+
+  <rect x="40" y="238" width="390" height="104" rx="10" fill="#dcfce7" stroke="#4ade80"/>
+  <text x="56" y="262" font-size="15" font-weight="700" fill="#14532d">2 · Y.Doc  (Yjs CRDT): the shared state</text>
+  <text x="56" y="284" font-size="12.5" fill="#14532d">The document's real content. One Y.Doc per document id.</text>
+  <text x="56" y="302" font-size="12.5" fill="#14532d">Updates merge in any order, any number of times, and</text>
+  <text x="56" y="320" font-size="12.5" fill="#14532d">every replica converges. Undo/redo = Yjs UndoManager.</text>
+
+  <rect x="40" y="372" width="390" height="104" rx="10" fill="#fef3c7" stroke="#fbbf24"/>
+  <text x="56" y="396" font-size="15" font-weight="700" fill="#78350f">3 · IndexedDB: local persistence</text>
+  <text x="56" y="418" font-size="12.5" fill="#78350f">y-indexeddb: every edit is stored here FIRST, so reloads</text>
+  <text x="56" y="436" font-size="12.5" fill="#78350f">and offline sessions lose nothing. Plus the document list,</text>
+  <text x="56" y="454" font-size="12.5" fill="#78350f">titles and sync flags, namespaced per signed-in user.</text>
+
+  <rect x="40" y="506" width="390" height="130" rx="10" fill="#ede9fe" stroke="#a78bfa"/>
+  <text x="56" y="530" font-size="15" font-weight="700" fill="#4c1d95">4 · SyncController + y-websocket (transport)</text>
+  <text x="56" y="552" font-size="12.5" fill="#4c1d95">Moves bytes; may be down at any time. On every (re)connect it</text>
+  <text x="56" y="570" font-size="12.5" fill="#4c1d95">runs the Yjs handshake: "here is what I have, send what I</text>
+  <text x="56" y="588" font-size="12.5" fill="#4c1d95">lack". No outbound operation queue. Status Offline / Connecting /</text>
+  <text x="56" y="606" font-size="12.5" fill="#4c1d95">Syncing / Synced comes from SERVER acknowledgements.</text>
+  <text x="56" y="624" font-size="12.5" fill="#4c1d95">+ MetadataSync (HTTP): create / rename / delete / share list.</text>
+
+  <rect x="40" y="660" width="390" height="76" rx="10" fill="#e4e4e7" stroke="#a1a1aa"/>
+  <text x="56" y="684" font-size="15" font-weight="700" fill="#27272a">5 · Service worker (Workbox)</text>
+  <text x="56" y="706" font-size="12.5" fill="#27272a">Caches the app shell so the page itself loads with no</text>
+  <text x="56" y="724" font-size="12.5" fill="#27272a">network. /api and /collab always go to the network.</text>
+
+  <!-- internal arrows -->
+  <line x1="235" y1="208" x2="235" y2="238" stroke="#52525b" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <line x1="235" y1="342" x2="235" y2="372" stroke="#52525b" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <line x1="235" y1="476" x2="235" y2="506" stroke="#52525b" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <text x="248" y="228" font-size="11" fill="#52525b">edits / render</text>
+  <text x="248" y="362" font-size="11" fill="#52525b">append updates / restore on load</text>
+  <text x="248" y="497" font-size="11" fill="#52525b">updates in / out</text>
+
+  <!-- ===================== SERVER ===================== -->
+  <rect x="590" y="76" width="390" height="680" rx="14" fill="#f4f4f5" stroke="#d4d4d8"/>
+  <text x="610" y="102" font-size="14" font-weight="700" fill="#3f3f46">SERVER  (Node.js + TypeScript)</text>
+
+  <rect x="610" y="116" width="350" height="128" rx="10" fill="#dbeafe" stroke="#60a5fa"/>
+  <text x="626" y="140" font-size="15" font-weight="700" fill="#1e3a8a">Express HTTP API</text>
+  <text x="626" y="162" font-size="12.5" fill="#1e3a8a">Accounts and revocable sessions (HttpOnly cookie,</text>
+  <text x="626" y="180" font-size="12.5" fill="#1e3a8a">scrypt hashes), documents, sharing, versions, comments.</text>
+  <text x="626" y="198" font-size="12.5" fill="#1e3a8a">Role checked in the DATABASE on every request; strangers</text>
+  <text x="626" y="216" font-size="12.5" fill="#1e3a8a">get the same 404 as "does not exist". Origin/CSRF checks,</text>
+  <text x="626" y="234" font-size="12.5" fill="#1e3a8a">input validation, rate limits.</text>
+
+  <rect x="610" y="274" width="350" height="196" rx="10" fill="#ede9fe" stroke="#a78bfa"/>
+  <text x="626" y="298" font-size="15" font-weight="700" fill="#4c1d95">Realtime server  (ws + y-protocols)</text>
+  <text x="626" y="320" font-size="12.5" fill="#4c1d95">One room per open document, holding the merged Y.Doc.</text>
+  <text x="626" y="338" font-size="12.5" fill="#4c1d95">Upgrade checks Origin + session + membership; refuses with</text>
+  <text x="626" y="356" font-size="12.5" fill="#4c1d95">4401 / 4403 (client must not retry). Viewers' writes are</text>
+  <text x="626" y="374" font-size="12.5" fill="#4c1d95">discarded. Presence identity is rewritten from the account.</text>
+  <text x="626" y="392" font-size="12.5" fill="#4c1d95">Relays what changed (never raw client bytes). Saves the</text>
+  <text x="626" y="410" font-size="12.5" fill="#4c1d95">state, THEN acknowledges it: that is what "Synced" means.</text>
+  <text x="626" y="428" font-size="12.5" fill="#4c1d95">Membership changes disconnect affected sockets at once.</text>
+  <text x="626" y="452" font-size="12.5" fill="#4c1d95">Graceful shutdown flushes every room.</text>
+
+  <rect x="610" y="500" width="350" height="236" rx="10" fill="#fce7f3" stroke="#f472b6"/>
+  <text x="626" y="524" font-size="15" font-weight="700" fill="#831843">PostgreSQL</text>
+  <text x="626" y="546" font-size="12.5" fill="#831843">users · sessions (token hashes only)</text>
+  <text x="626" y="564" font-size="12.5" fill="#831843">documents (metadata) · document_members (roles)</text>
+  <text x="626" y="582" font-size="12.5" fill="#831843">document_states: the merged Yjs state (bytea)</text>
+  <text x="626" y="600" font-size="12.5" fill="#831843">document_versions: frozen Yjs states (history)</text>
+  <text x="626" y="618" font-size="12.5" fill="#831843">comments: separate from the document text</text>
+  <text x="626" y="646" font-size="12.5" fill="#831843">Migrations: backend/migrations/*.sql (checksummed,</text>
+  <text x="626" y="664" font-size="12.5" fill="#831843">transactional, idempotent).</text>
+  <text x="626" y="692" font-size="12.5" fill="#831843">Rich text is NEVER stored as HTML or JSON rows:</text>
+  <text x="626" y="710" font-size="12.5" fill="#831843">only as a Yjs state, so merges stay lossless.</text>
+
+  <line x1="785" y1="244" x2="785" y2="274" stroke="#52525b" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="797" y="264" font-size="11" fill="#52525b">members, sessions</text>
+  <line x1="785" y1="470" x2="785" y2="500" stroke="#52525b" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <text x="797" y="490" font-size="11" fill="#52525b">load / save state</text>
+  <!-- ===================== NETWORK ===================== -->
+  <!-- HTTPS: browser (metadata sync, sign-in, sharing) -> Express API -->
+  <path d="M430 556 H452 V180 H610" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-dasharray="7 4" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <text x="526" y="144" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1e3a8a">HTTPS  /api</text>
+  <text x="526" y="159" text-anchor="middle" font-size="10.5" fill="#1e3a8a">JSON + session cookie</text>
+  <text x="526" y="174" text-anchor="middle" font-size="10.5" fill="#1e3a8a">same origin (proxied)</text>
+  <!-- WebSocket: browser sync provider -> realtime server -->
+  <path d="M430 610 H482 V372 H610" fill="none" stroke="#7c3aed" stroke-width="2.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <text x="536" y="320" text-anchor="middle" font-size="11.5" font-weight="700" fill="#4c1d95">WebSocket</text>
+  <text x="536" y="335" text-anchor="middle" font-size="10" fill="#4c1d95">/collab/&lt;documentId&gt;</text>
+  <text x="536" y="350" text-anchor="middle" font-size="10.5" fill="#4c1d95">Yjs sync · presence</text>
+  <text x="536" y="365" text-anchor="middle" font-size="10.5" fill="#4c1d95">server acks</text>
+
+</svg>

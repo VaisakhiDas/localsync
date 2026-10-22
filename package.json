@@ -1,0 +1,38 @@
+{
+  "name": "localsync",
+  "version": "0.1.0",
+  "private": true,
+  "description": "LocalSync - a local-first collaborative rich-text editor (React, TipTap, Yjs, PostgreSQL)",
+  "engines": {
+    "node": ">=20.17"
+  },
+  "workspaces": [
+    "shared",
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:db": "npm run dev:db -w backend",
+    "dev:backend": "npm run dev -w backend",
+    "dev:frontend": "npm run dev -w frontend",
+    "migrate": "npm run migrate -w backend",
+    "seed": "npm run seed -w backend",
+    "build": "npm run build -w frontend",
+    "typecheck": "npm run typecheck --workspaces --if-present && tsc --noEmit -p e2e/tsconfig.json",
+    "lint": "eslint .",
+    "test": "npm run test --workspaces --if-present",
+    "test:e2e": "playwright test -c e2e/playwright.config.ts",
+    "check": "npm run lint && npm run typecheck && npm test && npm run build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^20.19.0",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.72.0"
+  }
+}
